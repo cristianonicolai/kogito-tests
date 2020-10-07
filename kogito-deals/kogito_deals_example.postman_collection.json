@@ -1,0 +1,301 @@
+{
+	"info": {
+		"_postman_id": "2bfde821-1f09-429a-98c1-a76a8989ca5a",
+		"name": "Kogito Deals Example",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Deal",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "dbee87df-a450-477c-8ed0-4cb295755ee5",
+						"exec": [
+							"pm.test(\"Status test\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var json = pm.response.json();",
+							"var pid = json.id;",
+							"var deal = json.name;",
+							"",
+							"pm.globals.set(\"pid\", pid);",
+							"pm.globals.set(\"deal\", deal);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"name\" : \"{{$guid}}-deal\",\n\"traveller\" : {\n  \"firstName\" : \"{{$randomFirstName}}\",\n  \"lastName\" : \"{{$randomLastName}}\",\n  \"email\" : \"{{$randomEmail}}\",\n  \"nationality\" : \"American\",\n  \"address\" : {\n  \t\"street\" : \"{{$randomStreetAddress}}\",\n  \t\"city\" : \"{{$randomCity}}\",\n  \t\"zipCode\" : \"10005\",\n  \t\"country\" : \"{{$randomCountry}}\" }\n  }\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/deals",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deals"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get deal",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fb5ebc3a-e034-4b9e-b704-a828d95773b9",
+						"exec": [
+							"pm.test(\"Status test\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"test id\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eql(pm.variables.get(\"pid\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "31046336-ad04-4ff5-9169-d80a05c75795",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/deals/{{pid}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deals",
+						"{{pid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get deal review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2680fc9d-7aca-465e-8c33-79b7dcff5031",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"test deal name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var deal = jsonData.find(m => m.deal === pm.variables.get(\"deal\"));",
+							"    pm.expect(deal).to.be.an(\"object\", \"Could not find the setting\");",
+							"    pm.globals.set(\"dealId\", deal.id);",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/dealreviews",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"dealreviews"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Review Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b7c91a01-f541-4238-874d-219db3705224",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Get TaskId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.eql(1);",
+							"    pm.expect(jsonData[0].name).to.eql(\"review\");",
+							"    const taskId = jsonData[0].id;",
+							"    pm.globals.set(\"taskId\", taskId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/dealreviews/{{dealId}}/tasks?user=john",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"dealreviews",
+						"{{dealId}}",
+						"tasks"
+					],
+					"query": [
+						{
+							"key": "user",
+							"value": "john"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Complete Review Task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ba003d32-375c-483a-9327-f1b3a55310ce",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"review\" : \"{{$randomPhrase}}\"\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/dealreviews/{{dealId}}/review/{{taskId}}?user=john",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"dealreviews",
+						"{{dealId}}",
+						"review",
+						"{{taskId}}"
+					],
+					"query": [
+						{
+							"key": "user",
+							"value": "john"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get deal completed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "da700507-8a52-44bb-980d-fe302f076b44",
+						"exec": [
+							"pm.test(\"Status test\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "bd02c52d-c6e2-4614-8a4a-19f3641fe3b3",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/deals/{{pid}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deals",
+						"{{pid}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
